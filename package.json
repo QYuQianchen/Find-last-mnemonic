@@ -6,6 +6,7 @@
   "author": "QYuQianchen",
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^16.7.13",
     "tsc": "^2.0.3",
     "tsc-watch": "^4.5.0",
     "tslint": "^6.1.3",

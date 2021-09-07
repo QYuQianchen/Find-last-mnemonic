@@ -3,7 +3,7 @@ import {utils, wordlists} from "ethers";
 // Mnemonics english wordlist
 const ENGLISH_WORD_LIST = wordlists.en;
 const WORD_LIST_LAST_INDEX = 2047; //0...2047
-const MISSING_BITS_SIZE = 127; // 7 bits, 2**7 = 128, value from 0 to 127
+const MISSING_BITS_SIZE = 128; // 7 bits, 2**7 = 128, value from 0 to 127
 
 /**
  * BIT 39: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
@@ -64,6 +64,7 @@ const main = (knownWords: string) => {
     }
     
     console.log(`You may pic one word from the list:\n${possibleLastwords.join(' ')}\n`)
+    console.log(`A full list of possible mnemonic phrases:\n`)
     console.table(possibleMnemonics);
     console.log(`Try it at https://www.myetherwallet.com/wallet/access/software?type=mnemonic`)
 

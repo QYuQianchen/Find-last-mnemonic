@@ -1,62 +1,67 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var ethers_1 = require("ethers");
+const ethers_1 = require("ethers");
 // Mnemonics english wordlist
-var ENGLISH_WORD_LIST = ethers_1.wordlists.en;
-var WORD_LIST_LAST_INDEX = 2047; //0...2047
-var MISSING_BITS_SIZE = 127; // 7 bits, 2**7 = 128, value from 0 to 127
+const ENGLISH_WORD_LIST = ethers_1.wordlists.en;
+const WORD_LIST_LAST_INDEX = 2047; //0...2047
+const MISSING_BITS_SIZE = 128; // 7 bits, 2**7 = 128, value from 0 to 127
 /**
  * BIT 39: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
  * example: https://medium.com/coinmonks/mnemonic-generation-bip39-simply-explained-e9ac18db9477
  * Word list: https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt
  */
-var decInBitsWithPadding = function (dec, padding) { return dec.toString(2).padStart(padding, '0'); };
-var wordInDecToBits = function (wordInDec) {
-    return wordInDec.reduce(function (str, dec) { return str + decInBitsWithPadding(dec, 11); }, '');
+const decInBitsWithPadding = (dec, padding) => dec.toString(2).padStart(padding, '0');
+const wordInDecToBits = (wordInDec) => {
+    return wordInDec.reduce((str, dec) => str + decInBitsWithPadding(dec, 11), '');
 };
-var hexToBits = function (hex) {
-    var uint8array = Uint8Array.from(Buffer.from(hex, 'hex'));
-    return uint8array.reduce(function (str, byte) { return str + decInBitsWithPadding(byte, 8); }, '');
+const hexToBits = (hex) => {
+    const uint8array = Uint8Array.from(Buffer.from(hex, 'hex'));
+    return uint8array.reduce((str, byte) => str + decInBitsWithPadding(byte, 8), '');
 };
 // converting 128 bits to hex value.
-var bits128Tohex = function (bits128) {
+const bits128Tohex = (bits128) => {
     var _a;
-    return (_a = bits128.match(/\d{8}/g)) === null || _a === void 0 ? void 0 : _a.reduce(function (str, bits8) { return str + parseInt(bits8, 2).toString(16).padStart(2, '0'); }, '');
+    return (_a = bits128.match(/\d{8}/g)) === null || _a === void 0 ? void 0 : _a.reduce((str, bits8) => str + parseInt(bits8, 2).toString(16).padStart(2, '0'), '');
 };
-var main = function (knownWords) {
-    var known_bits;
-    var known_11_words;
+const main = (knownWords) => {
+    let known_bits;
+    let known_11_words;
     if (knownWords.length === 0) {
         // randomly generate 11 words
-        var known_11_words_index = Array(11).fill(0).map(function (a) { return Math.round(Math.random() * WORD_LIST_LAST_INDEX); });
-        known_11_words = known_11_words_index.map(function (wordIndex) { return ENGLISH_WORD_LIST.getWord(wordIndex); });
+        const known_11_words_index = Array(11).fill(0).map(a => Math.round(Math.random() * WORD_LIST_LAST_INDEX));
+        known_11_words = known_11_words_index.map(wordIndex => ENGLISH_WORD_LIST.getWord(wordIndex));
         known_bits = wordInDecToBits(known_11_words_index);
-        console.log("Randomly generate 11 words of index : " + JSON.stringify(known_11_words_index) + "\n        \n      Written in English: " + known_11_words + "\n        \n      Written in bits: " + known_bits + "\n");
+        console.log(`Randomly generate 11 words of index : ${JSON.stringify(known_11_words_index)}
+        \n      Written in English: ${known_11_words}
+        \n      Written in bits: ${known_bits}\n`);
     }
     else {
         known_11_words = knownWords.split(' ');
-        known_bits = wordInDecToBits(known_11_words.map(function (word) { return ENGLISH_WORD_LIST.getWordIndex(word); }));
-        console.log("Provided 11 words:\n        \n      Written in English: " + known_11_words + "\n        \n      Written in bits: " + known_bits + "\n");
+        known_bits = wordInDecToBits(known_11_words.map(word => ENGLISH_WORD_LIST.getWordIndex(word)));
+        console.log(`Provided 11 words:
+        \n      Written in English: ${known_11_words}
+        \n      Written in bits: ${known_bits}\n`);
     }
-    var possibleLastwords = [];
-    var possibleMnemonics = [];
+    let possibleLastwords = [];
+    let possibleMnemonics = [];
     // there is 7 bits missing
-    for (var index = 0; index < MISSING_BITS_SIZE; index++) {
-        var possibleBits = decInBitsWithPadding(index, 7);
-        var entropy = bits128Tohex(known_bits.concat(possibleBits));
-        var checksum = ethers_1.utils.sha256("0x" + entropy).slice(2, 3);
-        var lastWordInBits = possibleBits.concat(decInBitsWithPadding(parseInt(checksum, 16), 4)); // concatenate checksum in bits
-        var lastWordIndex = parseInt(lastWordInBits, 2);
-        var lastWord = ENGLISH_WORD_LIST.getWord(lastWordIndex);
+    for (let index = 0; index < MISSING_BITS_SIZE; index++) {
+        const possibleBits = decInBitsWithPadding(index, 7);
+        const entropy = bits128Tohex(known_bits.concat(possibleBits));
+        const checksum = ethers_1.utils.sha256("0x" + entropy).slice(2, 3);
+        const lastWordInBits = possibleBits.concat(decInBitsWithPadding(parseInt(checksum, 16), 4)); // concatenate checksum in bits
+        const lastWordIndex = parseInt(lastWordInBits, 2);
+        const lastWord = ENGLISH_WORD_LIST.getWord(lastWordIndex);
         // console.log(`Adding bits ${possibleBits} of index ${index} gives entropy ${entropy} with checksum ${checksum} => last word ${lastWord}`)
-        var mnemonic = known_11_words.concat(lastWord).join(' ');
+        const mnemonic = known_11_words.concat(lastWord).join(' ');
         // console.log(`[MNEMONIC] ${mnemonic.join(' ')}. \nTry it at https://www.myetherwallet.com/wallet/access/software?type=mnemonic \n`)
         possibleLastwords.push(lastWord);
         possibleMnemonics.push(mnemonic);
     }
-    console.log("You may pic one word from the list:\n" + possibleLastwords.join(' ') + "\n");
+    console.log(`You may pic one word from the list:\n${possibleLastwords.join(' ')}\n`);
+    console.log(`A full list of possible mnemonic phrases:\n`);
     console.table(possibleMnemonics);
-    console.log("Try it at https://www.myetherwallet.com/wallet/access/software?type=mnemonic");
+    console.log(`Try it at https://www.myetherwallet.com/wallet/access/software?type=mnemonic`);
 };
 // Replace "" with eleven words if exist
 // e.g. "brain shift ability husband into mixed detail dizzy eager seed mechanic"
