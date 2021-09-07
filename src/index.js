@@ -31,12 +31,15 @@ var main = function (knownWords) {
         var known_11_words_index = Array(11).fill(0).map(function (a) { return Math.round(Math.random() * WORD_LIST_LAST_INDEX); });
         known_11_words = known_11_words_index.map(function (wordIndex) { return ENGLISH_WORD_LIST.getWord(wordIndex); });
         known_bits = wordInDecToBits(known_11_words_index);
-        console.log("Randomly generate 11 words of index : " + JSON.stringify(known_11_words_index) + "\n        \nWritten in bits: " + known_11_words + "\n        \nWritten in bits: " + known_bits);
+        console.log("Randomly generate 11 words of index : " + JSON.stringify(known_11_words_index) + "\n        \n      Written in English: " + known_11_words + "\n        \n      Written in bits: " + known_bits + "\n");
     }
     else {
         known_11_words = knownWords.split(' ');
         known_bits = wordInDecToBits(known_11_words.map(function (word) { return ENGLISH_WORD_LIST.getWordIndex(word); }));
+        console.log("Provided 11 words:\n        \n      Written in English: " + known_11_words + "\n        \n      Written in bits: " + known_bits + "\n");
     }
+    var possibleLastwords = [];
+    var possibleMnemonics = [];
     // there is 7 bits missing
     for (var index = 0; index < MISSING_BITS_SIZE; index++) {
         var possibleBits = decInBitsWithPadding(index, 7);
@@ -45,26 +48,15 @@ var main = function (knownWords) {
         var lastWordInBits = possibleBits.concat(decInBitsWithPadding(parseInt(checksum, 16), 4)); // concatenate checksum in bits
         var lastWordIndex = parseInt(lastWordInBits, 2);
         var lastWord = ENGLISH_WORD_LIST.getWord(lastWordIndex);
-        console.log("Adding bits " + possibleBits + " of index " + index + " gives entropy " + entropy + " with checksum " + checksum + " => last word " + lastWord);
-        var mnemonic = known_11_words.concat(lastWord);
-        // console.log(mnemonic.map(word => ENGLISH_WORD_LIST.getWordIndex(word)));
-        // try {
-        //     utils.mnemonicToEntropy(mnemonic.toString(), ENGLISH_WORD_LIST)
-        // } catch (error) {
-        //     console.error(error)
-        // }
-        // console.log(`mnemonic ${mnemonic} ${utils.isValidMnemonic(mnemonic.toString(), ENGLISH_WORD_LIST)} ${ENGLISH_WORD_LIST.split(mnemonic.join(', ')).length}`)
-        console.log("[MNEMONIC] " + mnemonic.join(' ') + ". \nTry it at https://www.myetherwallet.com/wallet/access/software?type=mnemonic \n");
+        // console.log(`Adding bits ${possibleBits} of index ${index} gives entropy ${entropy} with checksum ${checksum} => last word ${lastWord}`)
+        var mnemonic = known_11_words.concat(lastWord).join(' ');
+        // console.log(`[MNEMONIC] ${mnemonic.join(' ')}. \nTry it at https://www.myetherwallet.com/wallet/access/software?type=mnemonic \n`)
+        possibleLastwords.push(lastWord);
+        possibleMnemonics.push(mnemonic);
     }
-    // Entropy in hexdecimal format; The initial entropy must be in 128-256 bits. 
-    // const entropyHex = '063679ca1b28b5cfda9c186b367e271e';
-    // console.log("sha256 test", utils.sha256("0x"+entropyHex))
-    // console.log("Initial entropy", entropyHex);
-    // // check if the initial entropy is in 128-256 bits
-    // console.log("Entropy in bits", hexToBits(entropyHex));
-    // console.log("Converting back", bits128Tohex(hexToBits(entropyHex)));
-    // console.assert(hexToBits(entropyHex).length >= 128 && hexToBits(entropyHex).length <= 256, "Initial entropy is not between 128 and 256 bits.")
-    // console.log("", constants.EtherSymbol);
+    console.log("You may pic one word from the list:\n" + possibleLastwords.join(' ') + "\n");
+    console.table(possibleMnemonics);
+    console.log("Try it at https://www.myetherwallet.com/wallet/access/software?type=mnemonic");
 };
 // Replace "" with eleven words if exist
 // e.g. "brain shift ability husband into mixed detail dizzy eager seed mechanic"
